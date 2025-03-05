@@ -6,8 +6,14 @@ import { db } from "./firebase";
 import { useCallback } from "react";
 import { signOut } from "firebase/auth";
 import { doc, deleteDoc } from "firebase/firestore";
+import { Helmet } from "react-helmet";
 
 function TodoApp() {
+  // Change name of website
+  useEffect(() => {
+    document.title = "Todo List"
+  }, []);
+
   // State to store the list of tasks
   const [tasks, setTasks] = useState(() => {
     const savedTasks = localStorage.getItem("tasks");
@@ -40,22 +46,22 @@ function TodoApp() {
     }
   };
 
-const fetchTasks = useCallback(async () => {
-  if (!user) return;
+  const fetchTasks = useCallback(async () => {
+    if (!user) return;
 
-  const q = query(collection(db, "tasks"), where("userId", "==", user.uid));
-  const querySnapshot = await getDocs(q);
-  const tasksList = querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
+    const q = query(collection(db, "tasks"), where("userId", "==", user.uid));
+    const querySnapshot = await getDocs(q);
+    const tasksList = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
-  setTasks(tasksList);
-}, [user]); 
+    setTasks(tasksList);
+  }, [user]); 
 
-useEffect(() => {
-  fetchTasks();
-}, [fetchTasks]); 
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]); 
 
   
 
@@ -118,73 +124,78 @@ useEffect(() => {
   };
 
   return (
-    <div style={{ maxWidth: "800px", margin: "auto", padding: "20px", textAlign: "center" }}>
-      <h2>Todo List</h2>
-      {user && (
-        <div style={{ marginBottom: "10px" }}>
-          <img 
-            src={user?.photoURL} 
-            alt="Profile" 
-            onError={(e) => e.target.src = "https://via.placeholder.com/40"} 
-            style={{ width: "40px", borderRadius: "50%" }} 
-          />
-          <p>Welcome, {user.displayName}!</p>
+    <>
+      <Helmet>
+        <title>Todo List</title>
+      </Helmet>
+      <div style={{ maxWidth: "800px", margin: "auto", padding: "20px", textAlign: "center" }}>
+        <h2>Todo List</h2>
+        {user && (
+          <div style={{ marginBottom: "10px" }}>
+            <img 
+              src={user?.photoURL} 
+              alt="Profile" 
+              onError={(e) => e.target.src = "https://via.placeholder.com/40"} 
+              style={{ width: "40px", borderRadius: "50%" }} 
+            />
+            <p>Welcome, {user.displayName}!</p>
+            <button 
+              onClick={logout} 
+              style={{
+                padding: "8px", 
+                backgroundColor: "red", 
+                color: "white", 
+                border: "none", 
+                cursor: "pointer",
+                borderRadius: "8px"
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = "darkred"}
+              onMouseOut={(e) => e.target.style.backgroundColor = "red"}
+            >
+              Logout
+            </button>
+          </div>
+        )}
+        {!user && (
           <button 
-            onClick={logout} 
-            style={{
-              padding: "8px", 
-              backgroundColor: "red", 
-              color: "white", 
-              border: "none", 
-              cursor: "pointer",
-              borderRadius: "8px"
-            }}
-            onMouseOver={(e) => e.target.style.backgroundColor = "darkred"}
-            onMouseOut={(e) => e.target.style.backgroundColor = "red"}
+            onClick={loginWithGoogle} 
+            style={{padding: "15px", backgroundColor: "blue", color: "white", border:"none", cursor: "pointer", margin: "8px", borderRadius: "20px", fontSize: "20px"}}
+            onMouseOver={(e) => e.target.style.backgroundColor = "darkblue"}
+            onMouseOut={(e) => e.target.style.backgroundColor = "blue"}
           >
-            Logout
+            Sign in with Google
           </button>
-        </div>
-      )}
-      {!user && (
-        <button 
-          onClick={loginWithGoogle} 
-          style={{padding: "15px", backgroundColor: "blue", color: "white", border:"none", cursor: "pointer", margin: "8px", borderRadius: "20px", fontSize: "20px"}}
-          onMouseOver={(e) => e.target.style.backgroundColor = "darkblue"}
-          onMouseOut={(e) => e.target.style.backgroundColor = "blue"}
-        >
-          Sign in with Google
-        </button>
-      )}
-      {user && (
-        <div>
-          <input
-            type="text"
-            value={taskInput}
-            onChange={(e) => setTaskInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Enter a task"
-            style={{ padding: "8px", width: "70%" }}
-          />
-          <button onClick={addTask} style={{ padding: "8px", marginLeft: "10px" }}>Add</button>
-          <button onClick={removeAllTasks} style={{padding: "8px", marginLeft: "10px"}}>Clear All</button>
-        </div>
-      )}
-      {user && (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {tasks.map(task => (
-            <li key={task.id} style={{ display: "flex", justifyContent: "space-between", padding: "10px", borderBottom: "1px solid #ddd" }}>
-              <span 
-                onClick={() => toggleTask(task.id)}
-                style={{ cursor: "pointer", textDecoration: task.completed ? "line-through" : "none" }}>
-                {task.text}
-              </span>
-              <button onClick={() => removeTask(task.id)} style={{ color: "red", border: "none", background: "none", cursor: "pointer" }}>💩</button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+        )}
+        {user && (
+          <div>
+            <input
+              type="text"
+              value={taskInput}
+              onChange={(e) => setTaskInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Enter a task"
+              style={{ padding: "8px", width: "70%" }}
+            />
+            <button onClick={addTask} style={{ padding: "8px", marginLeft: "10px" }}>Add</button>
+            <button onClick={removeAllTasks} style={{padding: "8px", marginLeft: "10px"}}>Clear All</button>
+          </div>
+        )}
+        {user && (
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {tasks.map(task => (
+              <li key={task.id} style={{ display: "flex", justifyContent: "space-between", padding: "10px", borderBottom: "1px solid #ddd" }}>
+                <span 
+                  onClick={() => toggleTask(task.id)}
+                  style={{ cursor: "pointer", textDecoration: task.completed ? "line-through" : "none" }}>
+                  {task.text}
+                </span>
+                <button onClick={() => removeTask(task.id)} style={{ color: "red", border: "none", background: "none", cursor: "pointer" }}>💩</button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </>
   );
 }
 
