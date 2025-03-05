@@ -100,7 +100,7 @@ useEffect(() => {
 
   const loginWithGoogle = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider.setCustomParameters({prompt: "select_account"}));
       setUser(result.user);
     } catch (error) {
       console.error("Login failed:", error);
@@ -139,6 +139,8 @@ useEffect(() => {
               cursor: "pointer",
               borderRadius: "8px"
             }}
+            onMouseOver={(e) => e.target.style.backgroundColor = "darkred"}
+            onMouseOut={(e) => e.target.style.backgroundColor = "red"}
           >
             Logout
           </button>
@@ -148,6 +150,8 @@ useEffect(() => {
         <button 
           onClick={loginWithGoogle} 
           style={{padding: "15px", backgroundColor: "blue", color: "white", border:"none", cursor: "pointer", margin: "8px", borderRadius: "20px", fontSize: "20px"}}
+          onMouseOver={(e) => e.target.style.backgroundColor = "darkblue"}
+          onMouseOut={(e) => e.target.style.backgroundColor = "blue"}
         >
           Sign in with Google
         </button>
